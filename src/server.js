@@ -35,22 +35,22 @@ class Server {
       let statObj = await fs.stat(filePath)
       if (statObj.isFile()) {
         // 如果是文件
-        this.sendFile(req, res, filePath, statObj)
+        this.sendFile(res, filePath)
       } else {
         // 如果是文件夹，文件夹会先尝试找index.html
         let concatFilePath = path.join(filePath, 'index1.html')
         // 再次判断文件是否存在
         try {
           // 如果存在html
-          let statObj = await fs.stat(concatFilePath)
-          this.sendFile(req, res, concatFilePath, statObj)
+          await fs.stat(concatFilePath)
+          this.sendFile(res, concatFilePath)
         } catch (e) {
           // 不存在html 需列出目录结构
-          this.showList(req, res, filePath, statObj, pathname)
+          this.showList(req, res, filePath, pathname)
         }
       }
     } catch (e) {
-      this.sendError(req, res, e)
+      this.sendError(res, e)
     }
 
   }
@@ -70,16 +70,16 @@ class Server {
       res.setHeader('Content-Type', 'text/html;charset=utf-8')
       res.end(r)
     } catch (e) {
-      this.sendError(req, res)
+      this.sendError(res, e)
     }
   }
-  sendFile (req, res, filePath) {
+  sendFile (res, filePath) {
     // 读取文件 进行响应
     res.setHeader('Content-Type', mime.getType(filePath)+';charset=utf-8')
     createReadStream(filePath).pipe(res)
   }
   // 用来处理错误信息
-  sendError (req, res, e) {
+  sendError (res, e) {
     debug(e)
     res.statusCode = 404
     res.end('Not Foud')
