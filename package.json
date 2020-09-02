@@ -6,7 +6,7 @@
   "keywords": [
     "http-server"
   ],
-  "author": "wl",
+  "author": "w-danboard",
   "license": "MIT",
   "bin": {
     "danboard-http-server": "./bin/www.js",
