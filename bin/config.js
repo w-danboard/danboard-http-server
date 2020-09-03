@@ -1,21 +1,27 @@
 const config = {
-  // 设置端口号
+  // 配置端口号
   port: {
     option: '-p, --port <val>',
     description: 'set your server port',
     usage: 3000
   },
-  // 可以配置目录
+  // 配置主机名
+  host: {
+    option: '-h, --host <val>',
+    description: 'set your hostname',
+    usage: '127.0.0.1'
+  },
+  // 配置目录
   directory: {
     option: '-d, --directory <val>',
     description: 'set your start directory',
     usage: process.cwd()
   },
-  // 可以配置主机名
-  host: {
-    option: '-h, --host <val>',
-    description: 'set your hostname',
-    usage: '127.0.0.1'
+  // 配置是否支持GZIP压缩
+  gzip: {
+    option: '-g, --gzip <val>',
+    description: 'set whether your support gzip',
+    usage: true
   }
 }
 

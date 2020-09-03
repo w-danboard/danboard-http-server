@@ -20,6 +20,7 @@ class Server {
     this.port = config.port
     this.directory = config.directory
     this.host = config.host
+    this.isSupportGzip = config.gzip
     this.template = template
   }
   async handleRequest (req, res) {
@@ -85,7 +86,7 @@ class Server {
     res.setHeader('Content-Type', mime.getType(filePath)+';charset=utf-8')
     // 使用gzip压缩之前 需要看下浏览器是否支持
     const gzip = this.gzip(req, res, filePath, statObj)
-    if (gzip) {
+    if (gzip && this.isSupportGzip) {
       createReadStream(filePath).pipe(gzip).pipe(res)
     } else {
       createReadStream(filePath).pipe(res)
