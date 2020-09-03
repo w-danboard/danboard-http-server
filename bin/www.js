@@ -26,18 +26,13 @@ program.on('--help', () => {
   })
 })
 
-// 解析参数 console.log(program.parse(process.argv))
-
+// 解析参数 program.parse(process.argv)
 const parserObj = program.parse(process.argv)
-
 const keys = Object.keys(config)
-
 let resultConfig = {}
 keys.forEach(key => {
   resultConfig[key] = parserObj[key] || config[key].usage
 })
-
-// console.log(resultConfig, '===>')
 
 const server = new Server(resultConfig)
 server.start()

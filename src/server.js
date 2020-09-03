@@ -38,7 +38,7 @@ class Server {
         this.sendFile(res, filePath)
       } else {
         // 如果是文件夹，文件夹会先尝试找index.html
-        let concatFilePath = path.join(filePath, 'index1.html')
+        let concatFilePath = path.join(filePath, 'index.html')
         // 再次判断文件是否存在
         try {
           // 如果存在html
@@ -98,6 +98,7 @@ module.exports = Server
 // 服务端优化 无非两点 [压缩 | 缓存]
 /** gzip压缩 [前端可以通过webpack插件进行压缩 (如果是静态资源，由前端压缩)]
  *  如果前端压缩了，那通过后端直接返回即可
- *  如果是前端没压缩，是后端压缩的。 那就是后端在返回的时候，在进行压缩
+ *  如果是前端没压缩，是后端压缩的。 那就是后端在返回的时候，再进行压缩
+ *  [gzip只是一种压缩格式，比如.gz的文件就是用gzip压缩的]
  */
 
