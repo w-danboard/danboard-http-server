@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 const { program } = require('commander')
-const chalk = require('chalk'); // 粉笔模块 终端输出带有颜色的文字
+const chalk = require('chalk')
 const { version } = require('../package.json')
 const config = require('./config.js')
 const Server = require('../src/server.js')
