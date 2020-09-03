@@ -86,7 +86,7 @@ class Server {
     res.setHeader('Content-Type', mime.getType(filePath)+';charset=utf-8')
     // 使用gzip压缩之前 需要看下浏览器是否支持
     const gzip = this.gzip(req, res, filePath, statObj)
-    if (gzip && this.isSupportGzip) {
+    if (gzip && this.isSupportGzip !== 'false') { // 终端设置的值false会被当成字符串，所以此处这样判断
       createReadStream(filePath).pipe(gzip).pipe(res)
     } else {
       createReadStream(filePath).pipe(res)
