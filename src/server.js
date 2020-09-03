@@ -35,7 +35,7 @@ class Server {
       let statObj = await fs.stat(filePath)
       if (statObj.isFile()) {
         // 如果是文件
-        this.sendFile(res, filePath)
+        this.sendFile(req, res, filePath, statObj)
       } else {
         // 如果是文件夹，文件夹会先尝试找index.html
         let concatFilePath = path.join(filePath, 'index.html')
@@ -43,7 +43,7 @@ class Server {
         try {
           // 如果存在html
           await fs.stat(concatFilePath)
-          this.sendFile(res, concatFilePath)
+          this.sendFile(req, res, concatFilePath, statObj) 
         } catch (e) {
           // 不存在html 需列出目录结构
           this.showList(req, res, filePath, pathname)
@@ -73,10 +73,23 @@ class Server {
       this.sendError(res, e)
     }
   }
-  sendFile (res, filePath) {
+  gzip (req, res, filePath, statObj) {
+    if (req.headers['accept-encoding'] && req.headers['accept-encoding'].includes('gzip')) {
+      res.setHeader('content-encoding', 'gzip')
+      return require('zlib').createGzip() // 创建转换流
+    }
+    return false
+  }
+  sendFile (req, res, filePath, statObj) {
     // 读取文件 进行响应
     res.setHeader('Content-Type', mime.getType(filePath)+';charset=utf-8')
-    createReadStream(filePath).pipe(res)
+    // 使用gzip压缩之前 需要看下浏览器是否支持
+    const gzip = this.gzip(req, res, filePath, statObj)
+    if (gzip) {
+      createReadStream(filePath).pipe(gzip).pipe(res)
+    } else {
+      createReadStream(filePath).pipe(res)
+    }
   }
   // 用来处理错误信息
   sendError (res, e) {
