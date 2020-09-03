@@ -2,4 +2,4 @@
 
 # danboard-http-server: a command-line http server
 
-![Example of running danboard-http-server](https://github.com/w-danboard/danboard-http-server/public/img.jpg)
+![Example of running danboard-http-server](https://raw.githubusercontent.com/w-danboard/danboard-http-server/master/public/img/img.jpg)
