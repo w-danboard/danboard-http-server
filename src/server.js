@@ -75,7 +75,8 @@ class Server {
     }
   }
   gzip (req, res, filePath, statObj) {
-    if (req.headers['accept-encoding'] && req.headers['accept-encoding'].includes('gzip')) {
+    const isSupportGzip = this.isSupportGzip !== 'false' // 终端设置的值false会被当成字符串，所以此处这样判断
+    if (req.headers['accept-encoding'] && req.headers['accept-encoding'].includes('gzip') && isSupportGzip) {
       res.setHeader('content-encoding', 'gzip')
       return require('zlib').createGzip() // 创建转换流
     }
@@ -86,7 +87,7 @@ class Server {
     res.setHeader('Content-Type', mime.getType(filePath)+';charset=utf-8')
     // 使用gzip压缩之前 需要看下浏览器是否支持
     const gzip = this.gzip(req, res, filePath, statObj)
-    if (gzip && this.isSupportGzip !== 'false') { // 终端设置的值false会被当成字符串，所以此处这样判断
+    if (gzip) {
       createReadStream(filePath).pipe(gzip).pipe(res)
     } else {
       createReadStream(filePath).pipe(res)
