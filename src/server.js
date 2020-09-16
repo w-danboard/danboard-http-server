@@ -4,6 +4,7 @@ const fs = require('fs').promises
 const { createReadStream, readFileSync } = require('fs')
 const path = require('path')
 const url = require('url')
+const crypto = require('crypto')
 
 // --------------第三方模块--------------
 const ejs = require('ejs')
@@ -82,7 +83,50 @@ class Server {
     }
     return false
   }
-  sendFile (req, res, filePath, statObj) {
+  async cache (req, res, filePath, statObj) {
+    // 伪代码
+    // if (/\.jpg|\.gif/.test(req.url)) {
+    //   // 匹配到走缓存 
+    // }
+
+    res.setHeader('Expires', new Date(Date.now() + 10 * 1000).toGMTString())
+    res.setHeader('Cache-Control', 'max-age=10')
+
+    let fileContent = await fs.readFile(filePath)
+
+    let ifNoneMatch = req.headers['if-none-match']
+    let etag = crypto.createHash('md5').update(fileContent).digest('base64')
+    
+    let ifModifiedScince = req.headers['if-modified-since']
+    let ctime = statObj.ctime.toGMTString()
+
+    res.setHeader('Last-Modified', ctime)
+    res.setHeader('Etag', etag)
+
+    let cache = true
+
+    if (ifNoneMatch !== etag) { // 摘要，一般取文件大小 加一些标识 [两种有一种不存在说明缓存失效，有一个存在就证明取缓存]
+      return false
+    }
+
+    if (ctime !== ifModifiedScince) { // last-modified 不够准确 一般要看摘要
+      return false
+    }
+
+    return cache
+  }
+  async sendFile (req, res, filePath, statObj) {
+    // 缓存
+    try {
+      let cache = await this.cache(req, res, filePath, statObj)
+      if (cache) {
+        res.statusCode = 304
+        return res.end()
+      }
+    } catch (err) {
+      console.log(chalk.redBright('error:'), err)
+    }
+
     // 读取文件 进行响应
     res.setHeader('Content-Type', mime.getType(filePath)+';charset=utf-8')
     // 使用gzip压缩之前 需要看下浏览器是否支持
