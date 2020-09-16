@@ -22,6 +22,12 @@ const config = {
     option: '-g, --gzip <val>',
     description: 'set whether your support gzip',
     usage: true
+  },
+  // 配置是否支持缓存
+  cache: {
+    option: '-c, --cache <val>',
+    description: 'set whether your support cache',
+    usage: true
   }
 }
 

@@ -27,7 +27,7 @@ program.on('--help', () => {
 })
 
 // 解析参数 program.parse(process.argv)
-const parserObj = program.parse(process.argv)
+const parserObj = program.parse(process.argv)    
 const keys = Object.keys(config)
 let resultConfig = {}
 keys.forEach(key => {

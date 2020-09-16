@@ -22,6 +22,7 @@ class Server {
     this.directory = config.directory
     this.host = config.host
     this.isSupportGzip = config.gzip
+    this.isCache = config.cache
     this.template = template
   }
   async handleRequest (req, res) {
@@ -76,7 +77,7 @@ class Server {
     }
   }
   gzip (req, res, filePath, statObj) {
-    const isSupportGzip = this.isSupportGzip !== 'false' // 终端设置的值false会被当成字符串，所以此处这样判断
+    const isSupportGzip = this.isSupportGzip !== 'false' // 终端设置的值false会被当成字符串，所以此处这样处理
     if (req.headers['accept-encoding'] && req.headers['accept-encoding'].includes('gzip') && isSupportGzip) {
       res.setHeader('content-encoding', 'gzip')
       return require('zlib').createGzip() // 创建转换流
@@ -88,32 +89,35 @@ class Server {
     // if (/\.jpg|\.gif/.test(req.url)) {
     //   // 匹配到走缓存 
     // }
+    const isCache = this.isCache !== 'false' // 终端设置的值false会被当成字符串，所以此处这样处理
+    if (isCache) {
+      res.setHeader('Expires', new Date(Date.now() + 10 * 1000).toGMTString())
+      res.setHeader('Cache-Control', 'max-age=10')
 
-    res.setHeader('Expires', new Date(Date.now() + 10 * 1000).toGMTString())
-    res.setHeader('Cache-Control', 'max-age=10')
+      let fileContent = await fs.readFile(filePath)
 
-    let fileContent = await fs.readFile(filePath)
+      let ifNoneMatch = req.headers['if-none-match']
+      let etag = crypto.createHash('md5').update(fileContent).digest('base64')
+      
+      let ifModifiedScince = req.headers['if-modified-since']
+      let ctime = statObj.ctime.toGMTString()
 
-    let ifNoneMatch = req.headers['if-none-match']
-    let etag = crypto.createHash('md5').update(fileContent).digest('base64')
-    
-    let ifModifiedScince = req.headers['if-modified-since']
-    let ctime = statObj.ctime.toGMTString()
+      res.setHeader('Last-Modified', ctime)
+      res.setHeader('Etag', etag)
 
-    res.setHeader('Last-Modified', ctime)
-    res.setHeader('Etag', etag)
+      let cache = true
 
-    let cache = true
+      if (ifNoneMatch !== etag) { // 摘要，一般取文件大小 加一些标识 [两种有一种不存在说明缓存失效，有一个存在就证明取缓存]
+        return false
+      }
 
-    if (ifNoneMatch !== etag) { // 摘要，一般取文件大小 加一些标识 [两种有一种不存在说明缓存失效，有一个存在就证明取缓存]
-      return false
+      if (ctime !== ifModifiedScince) { // last-modified 不够准确 一般要看摘要
+        return false
+      }
+
+      return cache
     }
-
-    if (ctime !== ifModifiedScince) { // last-modified 不够准确 一般要看摘要
-      return false
-    }
-
-    return cache
+    return false
   }
   async sendFile (req, res, filePath, statObj) {
     // 缓存
