@@ -145,7 +145,7 @@ class Server {
   sendError (res, e) {
     debug(e)
     res.statusCode = 404
-    res.end('Not Foud')
+    res.end('Not Found')
   }
   start () {
     const server = http.createServer(this.handleRequest.bind(this))
